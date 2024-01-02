@@ -1,0 +1,7 @@
+{% for item in create %}
+    <a class="dropdown-item" href="#">{{ item.name }}</a>
+{% endfor %}
+<div class="dropdown-divider"></div>
+{% for item in join %}
+    <a class="dropdown-item" href="#">{{ item.project.name }}</a>
+{% endfor %}

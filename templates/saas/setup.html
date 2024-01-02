@@ -1,0 +1,41 @@
+{% extends 'saas/project_layout.html' %}
+
+
+{% block link %}
+{% endblock %}
+
+{% block style %}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container" style="display:flex">
+        <div class="list-group col-sm-3 d-inline-block" style="margin-left:-40px;margin-top:30px">
+            <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
+                个人中心
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">我的资料</a>
+            <a href="#" class="list-group-item list-group-item-action">修改密码</a>
+            <a href="{% url 'delete_project' pid=request.project.id %}" class="list-group-item list-group-item-action">删除项目</a>
+        </div>
+        <div class="card col-sm-9 d-inline-block " style="width:200px">
+            <div class="card-header">
+                删除项目
+            </div>
+            <div class="card-body" style="display:flex;flex-direction: column">
+                <form method="POST" >
+                    {% csrf_token %}
+                    <div><h5 class="card-title">请输入项目名称</h5></div>
+                    <div><input type="text" class="form-control" name="project_to_delete"></div>
+                    <div><span class="alert-error">{{ errors }}</span></div>
+                    <div><button type="submit" class="btn btn-danger">删除</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+{% endblock %}

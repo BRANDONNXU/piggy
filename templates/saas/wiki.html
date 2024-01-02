@@ -1,0 +1,131 @@
+{% extends 'saas/project_layout.html' %}
+{% load static %}
+{% block link %}
+    <link rel="stylesheet" href="{% static 'plugins/editor-md/editor.md-master/css/editormd.preview.css' %}">
+
+{% endblock %}
+{% block style %}
+    <style>
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px
+        }
+
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+            text-align: center;
+            padding-top: 10px
+        }
+    </style>
+
+{% endblock %}
+{% block body %}
+
+    <div class="row container center-element col-sm-12">
+        <div class="card container-fluid center-text" style="margin-top:20px;padding:0 0 0 0">
+            <h5 class="card-header" style="text-align: left">
+                wiki文档
+                {% if wiki_obj %}
+                    <button id='btnDelete' type="button" class="btn btn-danger btn-sm float-right">删除</button>
+                {% endif %}
+            </h5>
+
+            <div class="card-body" style="margin:0 10px 0 10px">
+                <div class="col-sm-3 title-list">
+                    <div style="margin-top:10px">目录</div>
+                    <ul id="catalog">
+                    </ul>
+                </div>
+                <div class="col-sm-9 content">
+                    <div style="margin-top:10px;">
+                        {% if wiki_obj %}
+                            <div id="previewmd">
+                                <textarea  style="display:none" name="" id="" cols="30" rows="10">{{ wiki_obj.content }}</textarea>
+                            </div>
+                        {% else %}
+                            <h4>{{ request.project.name }}项目wiki文档库</h4>
+                            <a href="/saas/manage/{{ request.project.id }}/wiki/add">新建文章</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugins/editor-md/editor.md-master/editormd.js' %}"></script>
+    <script src="{% static 'plugins/editor-md/editor.md-master/lib/flowchart.min.js' %}"></script>
+    <script src="{% static 'plugins/editor-md/editor.md-master/lib/jquery.flowchart.min.js' %}"></script>
+    <script src="{% static 'plugins/editor-md/editor.md-master/lib/marked.min.js' %}"></script>
+    <script src="{% static 'plugins/editor-md/editor.md-master/lib/prettify.min.js' %}"></script>
+    <script src="{% static 'plugins/editor-md/editor.md-master/lib/raphael.min.js' %}"></script>
+    <script src="{% static 'plugins/editor-md/editor.md-master/lib/sequence-diagram.min.js' %}"></script>
+    <script src="{% static 'plugins/editor-md/editor.md-master/lib/underscore.min.jss' %}"></script>
+
+    <script>
+        $(function () {
+            showCatalog();
+            deleteWiki();
+            previewEditor();
+        })
+
+        function previewEditor() {
+            editormd.markdownToHTML('previewmd', {
+                htmlDecode: "style,script,iframe"
+            })
+        }
+
+        function showCatalog() {
+            $.ajax({
+                url: '{% url 'wiki_catalog' pid=request.project.id %}',
+                type: 'GET',
+                data: {pid:{{ request.project.id }}},
+                dataType: "JSON",
+                success: function (res) {
+                    if (res) {
+                        console.log(res);
+                        $.each(res, function (index, item) {
+                            if (!item.parent_id) {
+                                // <li id="id_1"><a>title</a></li>
+                                var li = $("<li>").attr('id', 'id_' + item.id).append($("<a>").text(item.title).attr('href', '?wid=' + item.id)).append($('<ul>'));
+                                $('#catalog').append(li);
+                            } else {
+                                var li = $("<li>").attr('id', 'id_' + item.id).append($("<a>").text(item.title).attr('href', '?wid=' + item.id)).append($('<ul>'));
+                                $('#id_' + item.parent_id).children('ul').append(li);
+                            }
+
+                        })
+                    } else {
+                        console.log('错误')
+                    }
+                }
+            })
+        }
+
+        function deleteWiki() {
+            var currentUrl = window.location.href;
+            var urlParams = new URLSearchParams(currentUrl.split('?')[1]);
+            var wid = urlParams.get('wid')
+
+            $("#btnDelete").click(function () {
+                $.ajax({
+                    url: currentUrl,
+                    type: 'POST',
+                    data: {wid},
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res) {
+                            console.log('错误')
+                        } else {
+                            console.log('错误')
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}

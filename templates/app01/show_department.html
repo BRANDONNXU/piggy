@@ -1,0 +1,36 @@
+{% extends "app01/layout.html" %}
+
+{% block body %}
+
+        <div class="highlight border" style="margin-top:20px">
+        <h2 class="bd-content_title container"> 部门列表 </h2>
+                <div class="container" style="margin-bottom: 5px; margin-top:5px">
+                    <a type="submit" href="/erp/depart_list/create_depart/" class="btn btn-primary btn-lg">新建部门</a>
+                </div>
+                <div class="container">
+                    <table class="table table-hover">
+                      <thead class="thead-dark">
+                        <tr>
+                          <th scope="col">id</th>
+                          <th scope="col">部门</th>
+                          <th scope="col">部门经理</th>
+                          <th scope="col">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in data_list %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.depart }}</td>
+                            <td>{{ item.manager.name }}</td>
+                            <td>
+                                <a type="submit" href="/erp/depart_list/{{ item.id }}/edit_depart" class="btn btn-success btn-sm">编辑</a>
+                                <a type="submit" href="/erp/depart_list/{{ item.id }}/delete_depart" class="btn btn-danger btn-sm">删除</a>
+                            </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+        </div>
+{% endblock %}

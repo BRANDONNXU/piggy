@@ -1,0 +1,25 @@
+{% extends 'saas/project_layout.html' %}
+
+{% block style %}
+    <style>
+        .no-radius {
+            border-radius:0;
+            text-align:center;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div>
+    {% if errors %}
+        <div class="alert alert-danger no-radius">
+            <h4><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>{{ errors }}</h4>
+        </div>
+    {% else %}
+        <div class="alert alert-danger no-radius">
+            <h4><i class="fa fa-check-circle" aria-hidden="true"></i>加入项目成功</h4>
+            <a href="{% url 'dashboard' pid=project_id%}">点击跳转至该项目</a>
+        </div>
+    {% endif %}
+    </div>
+{% endblock %}

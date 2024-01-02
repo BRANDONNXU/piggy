@@ -1,0 +1,15 @@
+{% extends 'app01/layout.html' %}
+
+{% block body %}
+    <div class="highlight border" style="margin-top:20px">
+        <h2 class="bd-content_title container"> 新建管理员 </h2>
+        <form class="container" method="POST" novalidate>
+            {% csrf_token %}
+            {% for fields in form %}
+                {{ fields.label }}: {{ fields }}
+                <div style="color:red;font-size:5px;margin-bottom: 10px">{{ fields.errors.0 }}</div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary align-items-center" style="height:38px ; margin-top:5px">提 交</button>
+        </form>
+    </div>
+{% endblock %}

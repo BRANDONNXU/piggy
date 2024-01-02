@@ -1,0 +1,230 @@
+{% extends 'saas/layout.html' %}
+
+{% block body %}
+    <div class="container" style="margin-top:20px;padding:0 0 0 0">
+        <button id="btnCreate" type="button" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle"
+                 viewBox="0 0 16 16" style="margin-top:-4px">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+            新建项目
+        </button>
+    </div>
+    <div class="row container center-element col-sm-12">
+        <div class="card container center-text" style="margin-top:20px;padding:0 0 0 0">
+            <h5 class="card-header" style="text-align: center">星标项目</h5>
+            <div class="card-body" style="margin:0 10px 0 10px">
+                {% for item in project_list.star %}
+                    {% if item.creator == request.saas  %}
+                    <div class="item" id="{{ item.id }}" type="create">
+                    {% else %}
+                    <div class="item" id="{{ item.id }}" type="join">
+                    {% endif %}
+                        <a href="/saas/manage/{{ item.id }}/dashboard" class="title"
+                           style="background-color:{{ item.get_color_display }}">{{ item.name }}</a>
+                        <div class="info">
+                            <div style="margin-top:2px">
+                                <a type="button" >
+                                    <i class="fa-solid fa-star float-left have-star" aria-hidden="true"
+                                       style="color: #e1aa14;margin-top: 3px;margin-right:3px"></i>
+                                </a>
+                                <span class="float-left">{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa-solid fa-person" style="margin-right: 2px"></i>
+                                <span style="font-size: 17px">{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+    <div class="row container center-element col-sm-12">
+        <div class="card container center-text" style="margin-top:20px;padding:0 0 0 0">
+            <h5 class="card-header" style="text-align: center">我创建的</h5>
+            <div class="card-body" style="margin:0 10px 0 10px">
+                {% for item in project_list.my_create %}
+                    <div class="item" id="{{ item.id }}" type="create">
+                        <a href="/saas/manage/{{ item.id }}/dashboard" class="title"
+                           style="background-color:{{ item.get_color_display }}">{{ item.name }}</a>
+                        <div class="info">
+                            <div style="margin-top:2px">
+                                <a type="button" class="float-left">
+                                    <i class="fa-solid fa-star float-left no-star" aria-hidden="true"
+                                       style="color: #bababa;margin-top: 3px;margin-right:3px"></i>
+                                </a>
+                                <span class="float-left">{{ item.creator.username }}</span>
+                            </div>
+                            <div>
+                                <i class="fa-solid fa-person" style="margin-right: 2px"></i>
+                                <span style="font-size: 17px">{{ item.join_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="row container center-element col-sm-12">
+        <div class="card container center-text" style="margin-top:20px;padding:0 0 0 0">
+            <h5 class="card-header" style="text-align: center">我参与的</h5>
+            <div class="card-body" style="margin:0 10px 0 10px">
+                <div class="card-body">
+                    {% for item in project_list.my_join %}
+                        <div class="item" id="{{ item.id }}" type="join">
+                            <a href="/saas/manage/{{ item.id }}/dashboard" class="title"
+                               style="background-color:{{ item.get_color_display }}">{{ item.name }}</a>
+                            <div class="info">
+                                <div style="margin-top:2px">
+                                    <a type="button" class="float-left">
+                                        <i class="fa-solid fa-star float-left no-star" aria-hidden="true"
+                                           style="color: #bababa;margin-top: 3px;margin-right:3px"></i>
+                                    </a>
+                                    <span class="float-left">{{ item.creator.username }}</span>
+                                </div>
+                                <div>
+                                    <i class="fa-solid fa-person" style="margin-right: 2px"></i>
+                                    <span style="font-size: 17px">{{ item.join_count }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {#    模态框#}
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="create_project_form" method="post">
+                    <div class="modal-body">
+                        {% for item in form %}
+                            {{ item.label }}: {{ item }}
+                            <div class="myerror" style="color:red;font-size:5px;margin-bottom: 10px"></div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" id="btnSave" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        var EDIT_ID;
+        $(function () {
+            btnAdd();
+            btnSave();
+            addStar();
+            removeStar();
+        })
+
+        function addStar() {
+            $('.no-star').click(function () {
+                $.ajax({
+                    url: 'add_star/',
+                    type: 'post',
+                    data: {id: $(this).parent().parent().parent().parent().attr('id'),type:$(this).parent().parent().parent().parent().attr('type')},
+                    dataType: "JSON",
+                    success: function (res) {
+                        // 对来自后端的返回值（JSON格式）进行判断
+                        if (res.status) {
+                            console.log(res);
+                            location.reload()
+                        } else {
+                            console.log(res);
+                            location.reload()
+                        }
+                    }
+                })
+            })
+        }
+
+        function removeStar(){
+            $('.have-star').click(function () {
+                $.ajax({
+                    url: 'remove_star/',
+                    type: 'post',
+                    data: {id: $(this).parent().parent().parent().parent().attr('id'),type:$(this).parent().parent().parent().parent().attr('type')},
+                    dataType: "JSON",
+                    success: function (res) {
+                        // 对来自后端的返回值（JSON格式）进行判断
+                        if (res.status) {
+                            console.log(res);
+                            location.reload()
+                        } else {
+                            console.log(res);
+                            location.reload()
+                        }
+                    }
+                })
+            })
+        }
+
+        function btnAdd() {
+            $('#btnCreate').click(function () {
+                EDIT_ID = undefined;
+                //打开模态框前，先清空表单内容及红色错误提示信息
+                $("#create_project_form")[0].reset();
+                $('.myerror').text('');
+                // 展示模态框
+                $('#myModal').modal('show')
+            })
+        }
+
+
+        function btnSave() {
+            //为btnSAVE按钮绑定点击事件
+            $('#btnSave').click(function () {
+                if (EDIT_ID) {
+                    do_EDIT()
+                } else {
+                    do_ADD()
+                }
+            });
+        }
+
+        function do_ADD() {
+            //发送AJAX请求到url地址，发送的数据为modelform表单自动序列化的数据
+            $.ajax({
+                url: '/saas/project_list/',
+                type: 'post',
+                data: $('#create_project_form').serialize(),
+                dataType: "JSON",
+                success: function (res) {
+                    // 对来自后端的返回值（JSON格式）进行判断
+                    if (res.status) {
+                        console.log(res);
+                        alert('创建成功');
+                        $('#myModal').modal('hide');
+                    } else {
+                        console.log(res);
+                        $.each(res.errors, function (key, value) {
+                            $('#id_' + key).next().text(value[0])
+                        })
+                    }
+                }
+            })
+        }
+
+
+    </script>
+
+
+{% endblock %}

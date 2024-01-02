@@ -1,0 +1,34 @@
+{% extends 'app01/layout.html' %}
+{% block body %}
+    <div class="highlight border container" style="margin-top:20px">
+        <h3 class="bd-content_title container"> 新建用户 </h3>
+        <div class="container">
+            <form method="POST">
+                        {% csrf_token %}
+                        {% for fields in create_user_form %}
+                            <div class="form-group">
+                                    <label>{{ fields.label }}</label>
+                                    {{ fields }}
+                            </div>
+                        {% endfor %}
+                <div class="button" style="margin-top:31px">
+                    <button type="submit" class="btn btn-primary align-items-center test" style="height:38px">提 交</button>
+                </div>
+            </form>
+        </div>
+
+
+
+
+        {% block js %}
+            <script>
+                    $('#id_create_time').datetimepicker({
+                        format:'yyyy-mm-dd',
+                        startDate:'0',
+                        language:'zh-CN',
+                        autoclose : true
+                    });
+            </script>
+        {% endblock %}
+
+{% endblock %}

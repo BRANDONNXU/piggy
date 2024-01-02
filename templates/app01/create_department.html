@@ -1,0 +1,26 @@
+{% extends 'app01/layout.html' %}
+
+{% block body %}
+        <div class="highlight border" style="margin-top:20px">
+        <h2 class="bd-content_title container"> 新建部门 </h2>
+        <form class="container" method="POST">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group col-md-5">
+                    <label>部门id</label>
+                    <fieldset disabled>
+                        <input type="email" class="form-control" id="inputEmail4" placeholder="id">
+                    </fieldset>
+                </div>
+                <div class="form-group col-md-6">
+                    <label>部门名称</label>
+                    <input type="text" class="form-control" placeholder="名称" id="inputPassword4" placeholder="请输入部门名称" name="create_depart_name">
+                </div>
+                <div class="col-md-1" style="margin-top:31px">
+                    <button type="submit" class="btn btn-primary align-items-center test" style="height:38px">提 交
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

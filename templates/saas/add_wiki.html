@@ -1,0 +1,77 @@
+{% extends 'saas/project_layout.html' %}
+{% load static %}
+{% block style %}
+
+    {% block link %}
+        <link rel="stylesheet" href="{% static 'plugins/editor-md/editor.md-master/css/editormd.css' %}">
+    {% endblock %}
+
+    <style>
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px
+        }
+
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+            text-align: center;
+            padding-top: 10px
+        }
+    </style>
+{% endblock %}
+{% block body %}
+
+    <div class="row container center-element col-sm-12">
+        <div class="card container-fluid center-text" style="margin-top:20px;padding:0 0 0 0">
+            <h5 class="card-header" style="text-align: left">wiki文档</h5>
+            <div class="card-body" style="margin:0 10px 0 10px">
+                <div class="col-sm-3 title-list">
+                    <div style="margin-top:10px">目录</div>
+                </div>
+                <div class="col-sm-9 content">
+                    <div style="margin-top:10px;text-align: left">
+                        <form method="POST">
+                            {% csrf_token %}
+                            {% for item in form %}
+                                {% if item.label == '内容' %}
+                                    <div class="form-group">
+                                        <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                        <div id="editor">{{ item }}</div>
+                                        <span class="myerror">{{ item.errors.0 }}</span>
+                                    </div>
+                                {% else %}
+                                    <div class="form-group">
+                                        <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                        <div>{{ item }}</div>
+                                        <span class="myerror">{{ item.errors.0 }}</span>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            <button type='submit' class="btn-primary btn btn-sm" style="margin-top:5px">提 交</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugins/editor-md/editor.md-master/editormd.js' %}"></script>
+
+    <script>
+        $(function () {
+            initEditor();
+        })
+
+        function initEditor() {
+            editormd('editor',{
+                placeholder:'请输入内容',
+                height:600,
+                path:'{% static 'plugins/editor-md/editor.md-master/lib/' %}'
+            })
+        }
+    </script>
+{% endblock %}

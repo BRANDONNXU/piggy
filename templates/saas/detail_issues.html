@@ -1,0 +1,349 @@
+{% extends 'saas/project_layout.html' %}
+{% load static %}
+{% load project %}
+{% block style %}
+
+    {% block link %}
+        <link rel="stylesheet" href="{% static 'plugins/editor-md/editor.md-master/css/editormd.css' %}">
+        <link rel="stylesheet" href="{% static 'plugins/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">
+    {% endblock %}
+
+    <style>
+        .issues-list {
+            width: 100px;
+            text-align: right;
+        }
+
+        .issue-list .number a {
+            font-weight: 500;
+            padding: 0 10px;
+        }
+
+        .issue-list .issue .tags {
+            padding: 10px 0;
+        }
+
+        .issue-list .issue .tags span {
+            margin-right: 20px;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        .issue-list .issue .tags .type {
+            color: white;
+            padding: 1px 5px;
+            border-radius: 5px;
+        }
+
+        .comment-area .item {
+            margin-top: 20px
+        }
+
+        .comment-area .left-avatar {
+            float: left;
+            margin-right: 10px;
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: #304659;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-left: 20px
+        }
+
+        .comment-area .right-info {
+            padding-left: 50px
+        }
+
+        .comment-area .right-info .desc .msg {
+            display: inline-block;
+            padding-right: 20px;
+            color: #8c8c8c;
+        }
+
+        .comment-area .child {
+            padding-left: 55px;
+        }
+
+        .comment-area .error-msg {
+            color: red;
+        }
+
+        .comment-area .reply-user {
+            display: inline-block;
+            background-color: #ddd;
+            color: black;
+            padding: 6px 8px;
+            margin-left: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="container-fluid clearfix" style="padding:20px 0">
+        <div class="row col-sm-12">
+            <div class="col-sm-7">
+                <div class="card">
+                    <div class="card-header">
+                        <div>更新问题</div>
+                    </div>
+                    <div class="card-body" style="padding:15px">
+                        <form id="edit_issue_form">
+                            {% for item in form %}
+                                {% if item.label == '问题描述' %}
+                                    <label for="{{ item.id_for_label }}" style="margin-top:10px">{{ item.label }}</label>
+                                    <div id="editor">{{ item }}</div>
+                                {% else %}
+                                    <label for="{{ item.id_for_label }}" style="margin-top:10px">{{ item.label }}</label>
+                                    {{ item }}
+                                    <span class="error-msg"  style="color:red;font-size:5px;margin-bottom: 10px"></span>
+                                {% endif %}
+                            {% endfor %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="card panel-default">
+                    <div class="card-header">
+                        <i class="fa fa-search" aria-hidden="true"></i>操作记录
+                    </div>
+                    <div class="card-body comment-area">
+                        <div class="comment-list">
+
+                        </div>
+                        <hr/>
+                        <div class="comment-text" id="commentText" style="display: block;width:100%;padding:10px">
+                            <div class="form-group">
+                                <textarea class="form-control" id="content" rows="6"
+                                          placeholder="请输入要回复的内容："></textarea>
+                                <span class="error-msg"></span>
+
+                            </div>
+                            <input class="btn btn-primary" id="btnSubmit111" value="提 交" type="button">
+                            <div class="reply-user hide" id="replyUser">
+                                回复<span></span>
+                                <i class="fa fa-times-circle" aria-hidden="true" style="color:#9d9d9d"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hide" id="recordTemplate">
+        <div class="item clearfix">
+            <div class="left-avatar"></div>
+            <div class="right-info">
+                <pre></pre>
+                <div class="desc">
+                    <div class="msg">
+                        <i class="fa fa-bullhorn" aria-hidden="true"></i>
+                        <span class="type"></span>
+                    </div>
+                    <div class="msg">
+                        <i class="fa fa-user-o" aria-hidden="true"></i>
+                        <span class="user"></span>
+                    </div>
+                    <div class="msg">
+                        <i class="fa fa-clock-o" aria-hidden="true"></i>
+                        <span class="date"></span>
+                    </div>
+
+                    <a type="button" href="#commentText" class="reply">
+                        <i class="fa fa-comment-o" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="child"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugins/editor-md/editor.md-master/editormd.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <script>
+        var REPLY_POST_URL = '{% url 'detail_reply_issues' pid=request.project.id iid=issue_id %}'
+        $(function () {
+            bindChangeIssues();
+            initReply();
+            bindReply();
+            bindCancelReply();
+            initEditor();
+            initDatepicker();
+            btnSave();
+            createRecordNode();
+
+        })
+
+        function initEditor() {
+            editormd('editor', {
+                placeholder: '请输入内容',
+                height: 600,
+                path: '{% static 'plugins/editor-md/editor.md-master/lib/' %}'
+            })
+        }
+
+        function initDatepicker() {
+            $('#id_start_date').datepicker({
+                format: 'yyyy-mm-dd',
+                startDate: '0',
+                language: 'zh-CN',
+                autoclose: true
+            });
+            $('#id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                startDate: '0',
+                language: 'zh-CN',
+                autoclose: true
+            });
+        }
+
+        function bindChangeIssues() {
+            $('#edit_issue_form').find('.form-control').change(function () {
+                //内容变更
+                var postDict = {name: $(this).attr('name'), value: $(this).val()};
+                console.log(postDict);
+                $.ajax({
+                    url: window.location.href,
+                    type: 'POST',
+                    data: JSON.stringify(postDict),
+                    dataType: "JSON",
+                    success:function(res){
+                        if (res.status){
+                        console.log(res);
+                        createRecordNode(res.data)
+                    }else{
+                        console.log(res);
+                        $.each(res.errors, function (key, value) {
+                            console.log(value);
+                            $('#id_' + key).next().text(value);
+                        })
+                    }}
+                })
+            })
+        }
+
+
+        function initReply() {
+            $.ajax({
+                url: REPLY_POST_URL,
+                type: 'GET',
+                dataType: "JSON",
+                success: function (res) {
+                    // 对来自后端的返回值（JSON格式）进行判断
+                    if (res.status) {
+                        console.log(res);
+                        $.each(res.data, function (index, item) {
+                            createRecordNode(item)
+                        })
+                    } else {
+                        console.log(res);
+                    }
+                }
+            })
+        }
+
+        function createRecordNode(nodeDict) {
+            var $item = $('#recordTemplate').find('.item').clone();
+            $item = $item.removeClass('hide');
+            $item.find('.left-avatar').html(nodeDict.creator[0].toUpperCase());
+            $item.find('pre').html(nodeDict.content);
+            $item.find('.user').html(nodeDict.creator);
+            $item.find('.type').html(nodeDict.reply_type_text);
+            $item.find('.date').html(nodeDict.datetime);
+            $item.attr({id: nodeDict.id, username: nodeDict.creator});
+
+            if (nodeDict.parent_id) {
+                console.log(9)
+                $('#' + nodeDict.parent_id).children('.child').append($item);
+
+            } else {
+                $('.comment-list').append($item)
+            }
+        }
+
+
+
+        function btnSave() {
+            $('#btnSave').click(function () {
+                $.ajax({
+                    url: '{% url 'add_issues' pid=request.project.id %}',
+                    type: 'post',
+                    data: $('#add_issue_form').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        // 对来自后端的返回值（JSON格式）进行判断
+                        if (res.status) {
+                            console.log(res);
+                            location.reload()
+                        } else {
+                            console.log(res);
+                            location.reload()
+                        }
+                    }
+                })
+            })
+
+        }
+
+
+        function bindReply() {
+            $('.comment-list').on('click', '.reply', function () {
+                console.log(2);
+                var $item = $(this).parent().parent().parent();
+                var id = $item.attr('id');
+                var username = $item.attr('username');
+                console.log(id);
+                console.log(username);
+                $('#replyUser').removeClass('hide').attr('parent_id', id).children('span').text(username);
+            })
+        }
+
+
+        function bindCancelReply() {
+            $('#replyUser').click(function () {
+                $(this).addClass('hide').removeAttr('parent-id').children('span').text('')
+            })
+        }
+
+
+        $('#btnSubmit111').click(function () {
+            console.log(1)
+            console.log($('#content').val())
+            $('#conmentText .error-msg').text('')
+            $.ajax({
+                url: REPLY_POST_URL,
+                type: 'POST',
+                data: {content: $('#content').val(), reply: $('#replyUser').attr('parent_id')},
+                dataType: 'JSON ',
+                success: function (res) {
+                    console.log(res);
+                    if (res.status) {
+                        // 添加节点
+                        createRecordNode(res.data);
+                        // 将输入框清空、回复按钮清空
+                        $('#content').val('')
+                        $('#replyUser').addClass('hide').removeAttr('parent_id').children('span').text('')
+                    } else {
+                        $.each(res.errors, function (k, v) {
+                            $('#content').next('.error-msg').text(v[0])
+                        })
+                    }
+                }
+            })
+        })
+
+    </script>
+{% endblock %}

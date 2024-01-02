@@ -1,0 +1,372 @@
+{% extends 'saas/project_layout.html' %}
+{% load static %}
+{% load project %}
+{% block style %}
+
+    {% block link %}
+        <link rel="stylesheet" href="{% static 'plugins/editor-md/editor.md-master/css/editormd.css' %}">
+        <link rel="stylesheet" href="{% static 'plugins/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">
+        <link rel="stylesheet" href="{% static 'plugins/select2/css/select2.css' %}">
+
+    {% endblock %}
+
+    <style>
+        .issues-list {
+            width: 100px;
+            text-align: right;
+        }
+
+        .issue-list .number a {
+            font-weight: 500;
+            padding: 0 10px;
+        }
+
+        .issue-list .issue .tags {
+            padding: 10px 0;
+        }
+
+        .issue-list .issue .tags span {
+            margin-right: 20px;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        .issue-list .issue .tags .type {
+            color: white;
+            padding: 1px 5px;
+            border-radius: 5px;
+        }
+
+        .filter-area .item {
+            margin-bottom: 15px;
+        }
+
+        .filter-area .item .title {
+            padding: 5px 0;
+        }
+
+        .filter-area .item .check-list a {
+            text-decoration: none;
+            display: inline;
+            min-width: 65px;
+        }
+
+        .filter-area .item .check-list label {
+            font-weight: 200;
+            font-size: 13px;
+            margin-left: 3px
+
+        }
+
+        .filter-area .item .check-list a:hover {
+            font-weight: 300;
+        }
+
+        .filter-area .item .check-list .cell {
+            margin-right: 10px;
+        }
+
+        .select2 {
+            width: 100% !important;
+        }
+
+        .hide {
+            display: none
+        }
+
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="container-fluid clearfix" style="padding:20px 0">
+        <div class="row col-sm-12">
+            <div class="col-sm-3">
+                <div class="card">
+                    <div class="card-header">
+                        筛选
+                    </div>
+                    <div class="card-body filter-area">
+                        <div class="item">
+                            <div class="title">问题类型</div>
+                            <div class="check-list" style="display:flex;flex-wrap: wrap">
+                                {% for item in issues_type_filter %}
+                                    {{ item }}
+                                {% endfor %}
+                            </div>
+                            <div class="title">状态</div>
+                            <div class="check-list" style="display:flex;flex-wrap: wrap">
+                                {% for item in status_filter %}
+                                    {{ item }}
+                                {% endfor %}
+                            </div>
+                            <div class="title">优先级</div>
+                            <div class="check-list" style="display:flex;flex-wrap: wrap">
+                                {% for item in priority_filter %}
+                                    {{ item }}
+                                {% endfor %}
+                            </div>
+                            <div class="title">模式</div>
+                            <div class="check-list" style="display:flex;flex-wrap: wrap">
+                                {% for item in mode_filter %}
+                                    {{ item }}
+                                {% endfor %}
+                            </div>
+                            <div class="title" style="">指派者</div>
+                            <div class="check-list" style="display:flex;flex-wrap: wrap">
+                                {% for item in assign_filter %}
+                                    {{ item }}
+                                {% endfor %}
+                            </div>
+                            <div class="title" style="">关注者</div>
+                            <div class="check-list" style="display:flex;flex-wrap: wrap">
+                                {% for item in attention_filter %}
+                                    {{ item }}
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-9">
+                <div class="card panel-default">
+                    <div class="card-header">
+                        Featured
+                    </div>
+                    <div class="card-body">
+                        <button id="show_modal" type="button" class="btn btn-success btn-sm" data-toggle="modal"
+                                data-target="#myModal">新建问题
+                        </button>
+                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#inviteModal">邀请成员
+                        </button>
+                    </div>
+                    <table class="table">
+                        <tbody class="issues-list">
+                        {% for item in object_list %}
+                            <tr>
+                                <td class="number"></td>
+                                <i class="fa fa-circle text-{{ item.priority }}"></i>
+                                <a target="_blank"
+                                   href="/saas/manage/{{ request.project.id }}/issues/detail/{{ item.id }}">{{ item.id }}</a>
+                                <td class="issue">
+                                    <div>
+                                        <a target="_blank" href="#">{{ item.subject }}</a>
+                                    </div>
+                                    <div class="tags">
+                                        <span class="type"
+                                              style="background-color:#56b8eb">{{ item.issues_type.title }}</span>
+                                        <span class=""><i class="fa-solid fa-arrows-rotate"
+                                                          aria-hidden="true"></i>{{ item.get_status_display }}</span>
+                                        <span class=""><i class="fa-regular fa-address-card"
+                                                          aria-hidden="true"></i>{{ item.assign.username }}</span>
+                                        <span class=""><i class="fa-regular fa-address-card"
+                                                          aria-hidden="true"></i>{{ item.creator.username }}</span>
+                                        <span class=""><i class="fa fa-calender"
+                                                          aria-hidden="true"></i>{{ item.end_date }}截止</span>
+                                        <span class=""><i class="fa fa-clock-o"
+                                                          aria-hidden="true"></i>{{ item.latest_update_datetime }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="modal fade in" tabindex="-1" id="myModal">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="add_issue_form">
+                        {% for item in form %}
+                            {% if item.label == '问题描述' %}
+                                <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                <div id="editor">{{ item }}</div>
+                            {% else %}
+                                <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                {{ item }}
+                            {% endif %}
+                        {% endfor %}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnSave" type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {#    邀请模态框#}
+    <div class="modal fade in" id='inviteModal' role="dialog" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="inviteForm">
+                        {% csrf_token %}
+                        {% for item in invite_form %}
+                            <div class="form-group">
+                                <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                <span>{% if item.help_text %}({{ item.help_text }}) {% endif %}</span>
+                                {{ item }}
+                                <span class="error_msg"></span>
+                            </div>
+                        {% endfor %}
+                        <button type="button" class="btn btn-success" id="btnGenInviteCode">生成邀请码</button>
+                    </form>
+                    <div id="InviteArea" class="hide">
+                        <hr/>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <input type="button" value="邀请链接" class="btn btn-default">
+                                </div>
+                                <input type="text" class="form-control" id="inviteUrl">
+                                <div class="input-group-btn">
+                                    <input type="button" value="复制链接" class="btn btn-primary" id="btnCopyUrl">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugins/editor-md/editor.md-master/editormd.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <script src="{% static 'plugins/select2/js/select2.full.js' %}"></script>
+
+    <script>
+        INVITE_URL = '{% url 'invite' pid=request.project.id %}'
+        $(function () {
+            bindCopyUrl();
+            bindCreateInviteCode();
+            initEditor();
+            initDatepicker();
+            btnSave();
+            bindCheckBoxFilter();
+            initSelect2();
+        })
+
+        $('#inviteModal').on('show.bs.modal', function (event) {
+            $('#InviteArea').addClass('hide')
+        })
+
+        function bindCopyUrl() {
+            $('#btnCopyUrl').click(function () {
+                var TextInput = $('#inviteUrl')[0];
+                TextInput.select();
+                document.execCommand("Copy");
+                alert('复制成功')
+            })
+        }
+
+        function bindCreateInviteCode() {
+            $('#btnGenInviteCode').click(function () {
+                $.ajax({
+                    url: INVITE_URL,
+                    type: 'POST',
+                    data: $('#inviteModal').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        // 对来自后端的返回值（JSON格式）进行判断
+                        if (res.status) {
+                            console.log(res);
+                            $('#inviteUrl').val(res.data);
+                            $('#InviteArea').removeClass('hide')
+                        } else {
+                            console.log(res);
+                        }
+                    }
+                })
+            })
+        }
+
+        function initSelect2() {
+            $('.select2').select2({}).on('select2:select', function (e) {
+                console.log(e)
+                //选中时触发
+                window.location.href = e.params.data.id
+            }).on('select2:unselect', function (e) {
+                //取消选择时触发
+                window.location.href = e.params.data.id
+            })
+        }
+
+        function bindCheckBoxFilter() {
+            $('.filter-area').find(':checkbox').click(function () {
+                window.location.href = $(this).parent().attr('href')
+            })
+        }
+
+        $('#show_modal').click(function () {
+            initEditor();
+            initDatepicker()
+        })
+
+        function initEditor() {
+            editormd('editor', {
+                placeholder: '请输入内容',
+                height: 600,
+                path: '{% static 'plugins/editor-md/editor.md-master/lib/' %}'
+            })
+        }
+
+        function initDatepicker() {
+            $('#id_start_date').datepicker({
+                format: 'yyyy-mm-dd',
+                startDate: '0',
+                language: 'zh-CN',
+                autoclose: true
+            });
+            $('#id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                startDate: '0',
+                language: 'zh-CN',
+                autoclose: true
+            });
+        }
+
+        function btnSave() {
+            $('#btnSave').click(function () {
+                $.ajax({
+                    url: '{% url 'add_issues' pid=request.project.id %}',
+                    type: 'post',
+                    data: $('#add_issue_form').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        // 对来自后端的返回值（JSON格式）进行判断
+                        if (res.status) {
+                            console.log(res);
+                            location.reload()
+                        } else {
+                            console.log(res);
+                            location.reload()
+                        }
+                    }
+                })
+            })
+
+        }
+    </script>
+{% endblock %}

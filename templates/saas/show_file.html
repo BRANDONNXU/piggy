@@ -1,0 +1,490 @@
+{% extends 'saas/project_layout.html' %}
+
+{% load static %}
+{% block style %}
+
+    {% block link %}
+        <link rel="stylesheet" href="{% static 'plugins/editor-md/editor.md-master/css/editormd.css' %}">
+    {% endblock %}
+
+    <style>
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px
+        }
+
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+            text-align: center;
+            padding-top: 10px
+        }
+
+        .card-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .card-header a {
+            text-decoration: none;
+        }
+
+        .card-header > .span {
+            padding: 0 5px;
+
+        }
+
+        #file_upload {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 76px;
+            left: -2px;
+            overflow: hidden;
+        }
+
+        .modal-content {
+            background-color: #FF0000; /* 红色 */
+            color: #FFF; /* 文本颜色为白色 */
+        }
+
+        /* 修改模态框的标题颜色 */
+        .modal-title {
+            color: #FFF; /* 标题文本颜色为白色 */
+        }
+
+        /* 修改模态框的关闭按钮颜色 */
+        .modal-header .close {
+            color: #FFF; /* 关闭按钮颜色为白色 */
+        }
+
+        /* 修改"取消"按钮的颜色 */
+        .btn-secondary {
+            background-color: #FFF; /* 按钮背景颜色为白色 */
+            color: #FF0000; /* 文本颜色为红色 */
+        }
+
+        /* 修改"确定"按钮的颜色 */
+        .btn-danger {
+            background-color: rgba(255, 0, 0, 0.6); /* 按钮背景颜色为红色 */
+            color: #FFF; /* 文本颜色为白色 */
+        }
+
+        .hide {
+            display: none
+        }
+
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    <div class="row container center-element col-sm-12">
+        <div class="card container-fluid center-text" style="margin-top:20px;padding:0 0 0 0">
+            <h5 class="card-header" style="text-align: left;">
+                <div>
+                    <a href="{% url 'file' pid=request.project.id %}">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <span>项目共享文件库</span>
+                    </a>
+                    {% for item in nav_obj %}
+                        <a href="?folder={{ item.id }}" style="margin-left:3px">
+                            <i class="fa-solid fa-caret-right"></i>
+                            <span>{{ item.name }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <div style="">
+                    <div class="btn btn-primary btn-sm upload" style="overflow: hidden;position:relative">
+                        <div><i class="fa fa-upload" aria-hidden="true"></i> 上传文件</div>
+                        <input id="file_upload" type="file" style="width:120%;margin:-5px" multiple/>
+                    </div>
+                    <a id="btnCreateFile" type="button" class="btn btn-success btn-sm" data-toggle="modal"
+                       data-target="#myModal" data-whatever="新建文件夹">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-plus-circle"
+                             viewBox="0 0 16 16" style="margin-top:-4px">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                        <span>新建文件夹</span>
+                    </a>
+                </div>
+            </h5>
+
+
+            <div class="card-body" style="margin:0 10px 0 10px">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">名称</th>
+                        <th scope="col">文件大小</th>
+                        <th scope="col">更新者</th>
+                        <th scope="col">更新时间</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in file_obj %}
+                        <tr>
+                            {% if item.file_type == 2 %}
+                                <th scope="row">
+                                    <a href={% url 'file' pid=request.project.id %}?folder={{ item.id }}>
+                                        <i class="fa-solid fa-folder"></i>
+                                        <span>{{ item.name }}</span>
+                                    </a>
+                                </th>
+                            {% else %}
+                                <th scope="row"><i class="fa-solid fa-file"></i>>{{ item.name }}</th>
+                            {% endif %}
+
+                            <td>{% if item.file_type == 2 %}
+                                <span> - </span>
+                            {% else %}
+                                {{ item.file_size }}
+                            {% endif %}
+                            </td>
+                            <td>{{ item.update_user.username }}</td>
+                            <td>{{ item.update_datetime }}</td>
+                            <td>
+                                {% if item.file_type == 2 %}
+                                    <a type="button" style="margin:0 5px 0 0"
+                                       data-toggle="modal" data-target="#myModal"
+                                       data-whatever="编辑文件夹" data-fid="{{ item.id }}"
+                                       data-file="{{ item.name }}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                {% else %}
+                                    <a type="button" style="margin:0 5px 0 0"
+                                       data-fid="{{ item.id }}"
+                                       data-file="{{ item.name }}"
+                                       href="{% url 'file_download' pid=request.project.id fid=item.id %}">
+                                        <i class="fa-solid fa-file-arrow-down"></i>
+                                    </a>
+                                {% endif %}
+                                <a class="btnDelete" type="button" data-fid="{{ item.id }}" data-toggle="modal"
+                                   data-target="#delete_Modal"
+                                   style="margin:0 0 0 0">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+    {#    上传进度条#}
+    <div id="progressDiv" class="card text-white bg-success mb-3"
+         style="max-width: 18rem;position:fixed;right:25px;bottom:5px;width:500px">
+        <div class="card-header" style="">
+            <div>
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>上传进度</span>
+            </div>
+            <i id="closeProgress" class="fa-solid fa-xmark" type="button" style="margin-top:5px"></i>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody id="progresslist">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {#新建/编辑文件夹模态框#}
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="file_form" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {% for item in form %}
+                            <div class="form-group">
+                                <input type="hidden" name="fid" id="fid">
+                                <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                {{ item }}
+                                <div class="myerror" style="color:red;font-size:5px;margin-bottom: 10px"></div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取 消</button>
+                        <button type="button" id="btnSave" class="btn btn-primary">确 定</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="delete_Modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">警告</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    确定要删除此项目吗？此操作不可撤销
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button id='btn_confirm_detele' type="button" class="btn btn-danger">确定
+                        <div class="spin-father"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div style="display:none" id="progresstemplate">
+        <table>
+            <tr id="tr">
+                <td>
+                    <div id="name" class="font-weight-bold name" style="margin:0 0 5px 0;color:black"></div>
+                    <div class="progress" style="margin-bottom: -10px">
+                        <div class="progress-bar  progress-bar-striped progress-bar-animated" role="progressbar"
+                             style="width: 50%;" aria-valuenow="50"
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id='spin-template' class="spinner-border hide" role="status">
+        <span class="hide sr-only">Loading...</span>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src={% static "js/cos-js-sdk-v5.min.js" %}></script>
+    <script>
+        CURRENT_URL = window.location.href
+        COS_CREDENTIAL = '{% url 'cos_credential' pid=request.project.id %}'
+        CHECK_FILE_BEFORE_UPLOAD = '{% url "check_file_before_upload"  pid=request.project.id %}'
+        CHECK_FILE_AFTER_UPLOAD = '{% url "check_file_after_upload"  pid=request.project.id %}'
+
+        $(function () {
+            initModal();
+            btnSave();
+            bindUploadFile();
+            closeProgress();
+            deleteFile();
+            $('.btnDelete').click(function () {
+                var attributeValue = $(this).attr('data-fid')
+                console.log(attributeValue)
+                $("#btn_confirm_detele").attr('fid', attributeValue)
+            })
+
+        })
+
+
+        function closeProgress() {
+            $('#closeProgress').click(function () {
+                $('#progressDiv').hide()
+            })
+        }
+
+
+        function bindUploadFile() {
+            //构造待检查文件列表
+            $('#file_upload').change(function () {
+                var filelist = $(this)[0].files;
+                var check_file_list = [];
+                $.each(filelist, function (index, fileObject) {
+                    var filename = fileObject.name
+                    var filesize = fileObject.size
+                    check_file_list.push({'name': filename, 'size': filesize})
+                });
+                // 把待检查文件列表通过ajax发送给后端，若返回True则执行临时密钥请求并上传文件
+                $.ajax({
+                    url: CHECK_FILE_BEFORE_UPLOAD,
+                    type: 'POST',
+                    data: JSON.stringify(check_file_list),
+                    success: function (res) {
+                        // 若返回True则执行临时密钥请求，并$.each文件列表上传文件
+                        if (res.status) {
+                            var cos = new COS({
+                                // getAuthorization 必选参数
+                                getAuthorization: function (options, callback) {
+                                    var url = '{% url 'cos_credential' pid=request.project.id %}'; // url 替换成您自己的后端服务
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open('GET', url, true);
+                                    xhr.onload = function (e) {
+                                        try {
+                                            var data = JSON.parse(e.target.responseText);
+                                            var credentials = data.credentials;
+                                        } catch (e) {
+                                        }
+                                        if (!data || !credentials) {
+                                            return console.error('credentials invalid:\n' + JSON.stringify(data, null, 2))
+                                        }
+                                        ;
+                                        callback({
+                                            TmpSecretId: credentials.tmpSecretId,
+                                            TmpSecretKey: credentials.tmpSecretKey,
+                                            SecurityToken: credentials.sessionToken,
+                                            // 建议返回服务器时间作为签名的开始时间，避免用户浏览器本地时间偏差过大导致签名错误
+                                            StartTime: data.startTime, // 时间戳，单位秒，如：1580000000
+                                            ExpiredTime: data.expiredTime, // 时间戳，单位秒，如：1580000000
+                                        });
+                                    };
+                                    xhr.send();
+                                }
+                            });
+                            $.each(filelist, function (index, fileObject) {
+                                $('#progressDiv').show();
+                                var filename = fileObject.name;
+                                var key = (new Date()).getTime() + '_' + filename
+                                var tr = $('#progresstemplate').find('tr').clone();
+                                tr.find('.name').text(filename);  // 设置行中的文本内容
+                                $('#progresslist').append(tr);
+
+                                cos.uploadFile({
+                                    Bucket: '{{request.project.bucket}}', /* 填入您自己的存储桶，必须字段 */
+                                    Region: '{{request.project.bucket_region}}',  /* 存储桶所在地域，例如ap-beijing，必须字段 */
+                                    Key: key,  /* 存储在桶里的对象键（例如1.jpg，a/b/test.txt），必须字段 */
+                                    Body: fileObject, /* 必须，上传文件对象，可以是input[type="file"]标签选择本地文件后得到的file对象 */
+                                    SliceSize: 1024 * 1024 * 5,     /* 触发分块上传的阈值，超过5MB使用分块上传，非必须 */
+                                    onProgress: function (progressData) {/* 回调函数 非必须 */
+                                        var percent = (progressData.percent * 100) - 1 + '%';
+                                        tr.find('.progress-bar').text(percent);
+                                        tr.find('.progress-bar').css('width', percent)
+                                        console.log("文件上传进度-->", JSON.stringify(progressData));
+                                    },
+                                }, function (err, data) {
+                                    console.log(err || data);
+                                    if (data && data.statusCode === 200) {
+                                        // 上传成功，把本次上传的数据提交到后台存入数据库
+                                        $.post(CHECK_FILE_AFTER_UPLOAD,
+                                            {
+                                                name: filename,
+                                                file_size: fileObject.size,
+                                                key: key,
+                                                ETag: data.ETag,
+                                                file_path: data.Location,
+                                                url: CURRENT_URL,
+                                                file_type: 1
+                                            },
+                                            function (res) {
+                                                console.log(res);
+                                                // 当数据库返回保存成功的结果，再展示“上传成功”
+                                                if (res.status) {
+                                                    tr.find('.progress-bar').text('上传成功');
+                                                    tr.find('.progress-bar').css('width', '100%');
+
+                                                } else {
+                                                    tr.find('.progress-bar').text('上传失败')
+                                                }
+                                            })
+                                    } else {
+                                        tr.find('.progress-bar').text('上传失败')
+                                    }
+                                })
+                            });
+                        } else {
+                            console.log('错误')
+                        }
+                    }
+                })
+
+
+            })
+        }
+
+        function btnSave() {
+            $('#btnSave').click(function () {
+                $.ajax({
+                    url: CURRENT_URL,
+                    type: 'POST',
+                    data: $('#file_form').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        // 对来自后端的返回值（JSON格式）进行判断
+                        if (res.status) {
+                            console.log(res);
+                            alert('创建成功');
+                            $('#myModal').modal('hide');
+                            location.reload();
+                        } else {
+                            console.log(res);
+                            $.each(res.errors, function (key, value) {
+                                $('#id_' + key).next().text(value[0])
+                            })
+                        }
+                    }
+                })
+            })
+        }
+
+        function initModal() {
+            $('#myModal').on('show.bs.modal', function (event) {
+                if ($(event.relatedTarget).data('file')) {
+                    //执行编辑
+                    $('.modal-title').text($(event.relatedTarget).data('whatever'));
+                    $('#id_name').val($(event.relatedTarget).data('file'));
+                    $('#fid').val($(event.relatedTarget).data('fid'));
+                } else {
+                    //执行添加
+                    var button = $(event.relatedTarget);
+                    var recipient = button.data('whatever');
+                    $('.modal-title').text(recipient);
+                    $('.myerror').empty();
+                    $('#file_form')[0].reset();
+                }
+            })
+        }
+
+
+        function deleteFile() {
+            $('#btn_confirm_detele').click(function () {
+                    var fid_to_delete = $(this).attr('fid');
+                    var url_to_delete = '{% url "file_delete" pid=request.project.id%}'
+                    console.log(url_to_delete)
+                    var $item = $('#spin-template').clone()
+                    $item = $item.removeClass('hide')
+                    $('#btn_confirm_detele').children('.spin-father').append($item)
+                    $.ajax({
+                        url: '{% url "file_delete" pid=request.project.id%}', // 修改为你的删除文件的后端URL
+                        type: 'POST', // 或 'GET'，取决于你的后端实现
+                        data: {fid: fid_to_delete},
+                        success: function (res) {
+                            // 对来自后端的返回值（JSON格式）进行判断
+                            if (res.status) {
+                                console.log(res);
+                                alert("删除成功")
+                                location.reload();
+                            } else {
+                                console.log(res);
+                                aler('删除失败');
+                                location.reload();
+                            }
+                        },
+                    });
+                }
+            )
+        }
+
+
+    </script>
+{% endblock %}

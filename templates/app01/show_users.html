@@ -1,0 +1,75 @@
+{% extends "app01/layout.html" %}
+
+{% block body %}
+
+
+    <div class="highlight border" style="margin-top:20px">
+        <h2 class="bd-content_title container"> 用户列表 </h2>
+        <div class="container" style="margin-bottom: 5px; margin-top:5px">
+            <a type="submit" href="/erp/user_list/create_user/" class="btn btn-primary">新建用户</a>
+        </div>
+        <div class="container mt-4">
+            <div class="row" style="margin-bottom: 5px;margin-top:-62px">
+                <div class="col-md-3 ml-auto">
+                    <form method="GET" action='/erp/user_list/' class="input-group">
+                        <input class="form-control" type="text" name='q' placeholder="搜索姓名" aria-label="搜索">
+                        <div class="input-group-append">
+                            <button  class="btn btn-primary" type="submit">搜索</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <table class="table table-hover container">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">id</th>
+                    <th scope="col">姓名</th>
+                    <th scope="col">密码</th>
+                    <th scope="col">年龄</th>
+                    <th scope="col">账户余额</th>
+                    <th scope="col">入职时间</th>
+                    <th scope="col">性别</th>
+                    <th scope="col">部门</th>
+                    <th scope="col">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in data_list %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.password }}</td>
+                        <td>{{ item.age }}</td>
+                        <td>{{ item.account }}</td>
+                        <td>{{ item.create_time }}</td>
+                        <td>{{ item.get_gender_display }}</td>
+                        <td>{{ item.depart_id }}</td>
+                        <td>
+                            <a type="submit" href="/erp/user_list/{{ item.id }}/edit_user/" class="btn btn-success btn-sm">编辑</a>
+                            <a type="submit" href="/erp/user_list/{{ item.id }}/delete_user/" class="btn btn-danger btn-sm">删除</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <nav aria-label="Page navigation example" class="container">
+            <ul class="pagination">
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {{ html_str }}
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'app01/layout.html' %}
+
+{% block body %}
+
+        <div class="highlight border" style="margin-top:20px">
+        <h2 class="bd-content_title container"> 编辑用户 </h2>
+        <div class="container">
+            <form method="POST">
+                {% csrf_token %}
+                {% for fields in edit_user_form %}
+                    {{ fields.label}}: {{fields}}
+                {% endfor %}
+                <div class="col-md-1" style="margin-top:31px">
+                    <button type="submit" class="btn btn-primary align-items-center test" style="height:38px">提 交
+                    </button>
+                </div>
+            </form>
+        </div>
+
+{% endblock %}
