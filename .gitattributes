@@ -1,3 +1,3 @@
 # Exclude a specific directory from language statistics
-app01/static/* linguist-vendored
+app01/static/**/* linguist-vendored
 
