@@ -1,5 +1,3 @@
-# Specify file types and their language
-*.py linguist-detectable=true
-*.js linguist-detectable=false
-*.html linguist-detectable=false
-*.css linguist-detectable=false
+# Exclude a specific directory from language statistics
+app01/static/* linguist-vendored
+
