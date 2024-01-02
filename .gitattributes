@@ -1,0 +1,4 @@
+# Specify file types and their language
+*.py linguist-detectable=true
+*.js linguist-detectable=false
+*.html linguist-detectable=false
